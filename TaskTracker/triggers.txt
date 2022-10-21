@@ -1,6 +1,7 @@
 
 
 CREATE OR REPLACE FUNCTION UpdateCommand() RETURNS TRIGGER AS $$
+
 DECLARE
 
     com1 int;
@@ -12,22 +13,27 @@ BEGIN
         com1=NEW."CommandOne_id";
         com2=NEW."CommandTwo_id";
         active=NEW."IsActive";
-        IF active = true THEN
+        IF active = True THEN
             update "Tracker_command" set "CurrentOpponent_id"=com1 where "id"=com2;
             update "Tracker_command" set "CurrentOpponent_id"=com2 where "id"=com1;
+
+
             RETURN NEW;
         ELSE
+
             RETURN NEW;
         END IF;
     ELSIF TG_OP = 'UPDATE' THEN
         com1=NEW."CommandOne_id";
         com2=NEW."CommandTwo_id";
         active=NEW."IsActive";
-        if active = true THEN
+        if active = True THEN
+
             update "Tracker_command" set "CurrentOpponent_id"=com1 where "id"=com2;
             update "Tracker_command" set "CurrentOpponent_id"=com2 where "id"=com1;
             RETURN NEW;
         ELSE
+
             update "Tracker_command" set "CurrentOpponent_id"=NULL where "id"=com2;
             update "Tracker_command" set "CurrentOpponent_id"=NULL where "id"=com1;
             RETURN NEW;
@@ -56,6 +62,7 @@ AFTER INSERT OR UPDATE OR DELETE ON "Tracker_match" FOR EACH ROW EXECUTE PROCEDU
 
 
 CREATE OR REPLACE FUNCTION UpdateStats() RETURNS TRIGGER AS $$
+
 DECLARE
 
     com1 int;
@@ -110,6 +117,7 @@ BEGIN
         END IF;
     END IF;
 END;
+
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER UpdtStats
@@ -126,6 +134,7 @@ AFTER INSERT OR UPDATE OR DELETE ON "Tracker_match" FOR EACH ROW EXECUTE PROCEDU
 
 
 CREATE OR REPLACE FUNCTION UpdatePayed() RETURNS TRIGGER AS $$
+
 DECLARE
 
     active bool;
@@ -144,6 +153,7 @@ BEGIN
         return NEW;
      END IF;
 END;
+
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER UpdtPd
@@ -164,13 +174,14 @@ AFTER  UPDATE  ON "Tracker_match" FOR EACH ROW EXECUTE PROCEDURE UpdatePayed ();
 
 
 CREATE OR REPLACE FUNCTION UpdateComm() RETURNS TRIGGER AS $$
+
 DECLARE
 
     OldOp int;
 BEGIN
 
     IF TG_OP = 'UPDATE' THEN
-            OldOp=OLD."CurrentOpponent_id";
+       OldOp=OLD."CurrentOpponent_id";
             update "Tracker_command" set "CurrentOpponent_id"=Null where "id"=OldOp ;
             return NEW;
      END IF;
