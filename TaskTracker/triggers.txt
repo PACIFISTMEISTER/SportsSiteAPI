@@ -1,0 +1,244 @@
+
+
+CREATE OR REPLACE FUNCTION UpdateCommand() RETURNS TRIGGER AS $$
+DECLARE
+
+    com1 int;
+    com2 int;
+    active bool;
+
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        com1=NEW."CommandOne_id";
+        com2=NEW."CommandTwo_id";
+        active=NEW."IsActive";
+        IF active = true THEN
+            update "Tracker_command" set "CurrentOpponent_id"=com1 where "id"=com2;
+            update "Tracker_command" set "CurrentOpponent_id"=com2 where "id"=com1;
+            RETURN NEW;
+        ELSE
+            RETURN NEW;
+        END IF;
+    ELSIF TG_OP = 'UPDATE' THEN
+        com1=NEW."CommandOne_id";
+        com2=NEW."CommandTwo_id";
+        active=NEW."IsActive";
+        if active = true THEN
+            update "Tracker_command" set "CurrentOpponent_id"=com1 where "id"=com2;
+            update "Tracker_command" set "CurrentOpponent_id"=com2 where "id"=com1;
+            RETURN NEW;
+        ELSE
+            update "Tracker_command" set "CurrentOpponent_id"=NULL where "id"=com2;
+            update "Tracker_command" set "CurrentOpponent_id"=NULL where "id"=com1;
+            RETURN NEW;
+        END IF;
+    ELSIF TG_OP = 'DELETE' THEN
+        com1=OLD."CommandOne_id";
+        com2=OLD."CommandTwo_id";
+        update "Tracker_command" set "CurrentOpponent_id"=NULL where "id"=com2;
+        update "Tracker_command" set "CurrentOpponent_id"=NULL where "id"=com1;
+        RETURN OLD;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER Updt
+AFTER INSERT OR UPDATE OR DELETE ON "Tracker_match" FOR EACH ROW EXECUTE PROCEDURE UpdateCommand ();
+
+
+
+
+
+
+
+
+
+
+
+CREATE OR REPLACE FUNCTION UpdateStats() RETURNS TRIGGER AS $$
+DECLARE
+
+    com1 int;
+    com2 int;
+    price int;
+    winner int;
+    match_id int;
+
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        com1=NEW."CommandOne_id";
+        com2=NEW."CommandTwo_id";
+        winner=NEW."Winner_id";
+        price=NEW."Price";
+        match_id=NEW."id";
+        IF winner is null THEN
+            RETURN NEW;
+        ELSE
+            update "Tracker_command" set "Wins"="Wins"+1 where "id"=winner;
+            update "Tracker_player" set "Earingngs"="Earingngs"+price where "PlayerCommand_id"=winner;
+            update "Tracker_player" set "MatchesPlayed"="MatchesPlayed"+1 where "PlayerCommand_id"=com1 or "PlayerCommand_id"=com2;
+            NEW."IsActive"=false;
+            RETURN NEW;
+        END IF;
+    ELSIF TG_OP = 'UPDATE' THEN
+        com1=NEW."CommandOne_id";
+        com2=NEW."CommandTwo_id";
+        winner=NEW."Winner_id";
+        price=NEW."Price";
+        match_id=NEW."id";
+        IF winner is null THEN
+            RETURN NEW;
+        ELSE
+            update "Tracker_command" set "Wins"="Wins"+1 where "id"=winner;
+            update "Tracker_player" set "Earingngs"="Earingngs"+price where "PlayerCommand_id"=winner;
+            update "Tracker_player" set "MatchesPlayed"="MatchesPlayed"+1 where "PlayerCommand_id"=com1 or "PlayerCommand_id"=com2;
+            NEW."IsActive"=false;
+            RETURN NEW;
+        END IF;
+    ELSIF TG_OP = 'DELETE' THEN
+        com1=OLD."CommandOne_id";
+        com2=OLD."CommandTwo_id";
+        winner=OLD."Winner_id";
+        price=OLD."Price";
+        IF winner is null THEN
+            RETURN OLD;
+        ELSE
+            update "Tracker_command" set "Wins"="Wins"-1 where "id"=winner;
+            update "Tracker_player" set "Earingngs"="Earingngs"-price where "PlayerCommand_id"=winner;
+            update "Tracker_player" set "MatchesPlayed"="MatchesPlayed"-1 where "PlayerCommand_id"=com1 or "PlayerCommand_id"=com2;
+            RETURN NEW;
+        END IF;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER UpdtStats
+AFTER INSERT OR UPDATE OR DELETE ON "Tracker_match" FOR EACH ROW EXECUTE PROCEDURE UpdateStats ();
+
+
+
+
+
+
+
+
+
+
+
+CREATE OR REPLACE FUNCTION UpdatePayed() RETURNS TRIGGER AS $$
+DECLARE
+
+    active bool;
+    match_id int;
+BEGIN
+
+    IF TG_OP = 'UPDATE' THEN
+       active=NEW."IsActive";
+       match_id=NEW."id";
+       if active=True then
+            return NEW;
+        else
+            update "Tracker_bet" set "Payed"=True where "Match_id"=match_id ;
+
+        end if;
+        return NEW;
+     END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER UpdtPd
+AFTER  UPDATE  ON "Tracker_match" FOR EACH ROW EXECUTE PROCEDURE UpdatePayed ();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CREATE OR REPLACE FUNCTION UpdateComm() RETURNS TRIGGER AS $$
+DECLARE
+
+    OldOp int;
+BEGIN
+
+    IF TG_OP = 'UPDATE' THEN
+            OldOp=OLD."CurrentOpponent_id";
+            update "Tracker_command" set "CurrentOpponent_id"=Null where "id"=OldOp ;
+            return NEW;
+     END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER UpdtCm
+AFTER INSERT OR UPDATE OR DELETE ON "Tracker_command" FOR EACH ROW EXECUTE PROCEDURE UpdateComm ();
+
+
+
+
+
+
+
+
+CREATE OR REPLACE FUNCTION UpdateCommand() RETURNS TRIGGER AS $$
+DECLARE
+
+    com1 int;
+    com2 int;
+    active bool;
+
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        com1=NEW."CommandOne_id";
+        com2=NEW."CommandTwo_id";
+        active=NEW."IsActive";
+        IF active = True THEN
+            update "Tracker_command" set "CurrentOpponent_id"=com1 where "id"=com2;
+            update "Tracker_command" set "CurrentOpponent_id"=com2 where "id"=com1;
+
+
+            RETURN NEW;
+        ELSE
+
+            RETURN NEW;
+        END IF;
+    ELSIF TG_OP = 'UPDATE' THEN
+        com1=NEW."CommandOne_id";
+        com2=NEW."CommandTwo_id";
+        active=NEW."IsActive";
+        if active = True THEN
+
+            update "Tracker_command" set "CurrentOpponent_id"=com1 where "id"=com2;
+            update "Tracker_command" set "CurrentOpponent_id"=com2 where "id"=com1;
+            RETURN NEW;
+        ELSE
+
+            update "Tracker_command" set "CurrentOpponent_id"=NULL where "id"=com2;
+            update "Tracker_command" set "CurrentOpponent_id"=NULL where "id"=com1;
+            RETURN NEW;
+        END IF;
+    ELSIF TG_OP = 'DELETE' THEN
+        com1=OLD."CommandOne_id";
+        com2=OLD."CommandTwo_id";
+        update "Tracker_command" set "CurrentOpponent_id"=NULL where "id"=com2;
+        update "Tracker_command" set "CurrentOpponent_id"=NULL where "id"=com1;
+        RETURN OLD;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER Updt
+AFTER INSERT OR UPDATE OR DELETE ON "Tracker_match" FOR EACH ROW EXECUTE PROCEDURE UpdateCommand ();
+
+
+
+
+
+
